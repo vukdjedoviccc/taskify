@@ -125,7 +125,7 @@ model Column {
 // ============================================================================
 model Task {
   id          Int       @id @default(autoincrement())
-  title       String    @db.NVarChar(255)
+  title       String    @db.NVarChar(512)
   description String?   @db.NVarChar(Max)
   columnId    Int
   position    Int       @default(0)
