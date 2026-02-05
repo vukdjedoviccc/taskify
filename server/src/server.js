@@ -7,6 +7,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import { env } from './config/env.js';
 
 const app = express();
 
@@ -20,7 +21,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
+    origin: env.CORS_ORIGIN,
     credentials: true,
   })
 );
@@ -39,7 +40,7 @@ app.use((req, res) => res.status(404).json({ message: 'Not found' }));
 // START SERVER
 // ============================================================================
 
-const PORT = process.env.PORT || 8081;
+const PORT = env.PORT || 8081;
 app.listen(PORT, () => {
   console.log(`Taskify API running on http://localhost:${PORT}`);
 });
