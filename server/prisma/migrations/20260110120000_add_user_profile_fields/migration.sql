@@ -1,0 +1,22 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- AddColumn
+ALTER TABLE [dbo].[User] ADD [bio] NVARCHAR(500);
+
+-- AddColumn
+ALTER TABLE [dbo].[User] ADD [phone] NVARCHAR(32);
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

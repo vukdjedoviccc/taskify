@@ -22,6 +22,8 @@ model User {
   email     String   @unique @db.NVarChar(191)
   password  String   @db.NVarChar(255)
   avatarUrl String?  @db.NVarChar(500)
+  bio       String?  @db.NVarChar(500)
+  phone     String?  @db.NVarChar(32)
   role      String   @default("USER") @db.NVarChar(16)
 
   createdAt DateTime @default(now())
