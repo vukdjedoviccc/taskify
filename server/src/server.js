@@ -7,7 +7,12 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.js';
+import { swaggerSpec } from './config/swagger.js';
+
+// Rute
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -27,11 +32,21 @@ app.use(
 );
 
 // ============================================================================
+// SWAGGER API DOCS
+// ============================================================================
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
+
+// ============================================================================
 // ROUTES
 // ============================================================================
 
 // Health check
 app.get('/health', (_req, res) => res.json({ ok: true, app: 'Taskify' }));
+
+// Auth
+app.use('/api/auth', authRoutes);
 
 // 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Not found' }));
