@@ -9,6 +9,9 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import { env } from './config/env.js';
 
+// Rute
+import authRoutes from './routes/auth.routes.js';
+
 const app = express();
 
 // ============================================================================
@@ -32,6 +35,9 @@ app.use(
 
 // Health check
 app.get('/health', (_req, res) => res.json({ ok: true, app: 'Taskify' }));
+
+// Auth
+app.use('/api/auth', authRoutes);
 
 // 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Not found' }));
