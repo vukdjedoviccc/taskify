@@ -13,6 +13,8 @@ import { swaggerSpec } from './config/swagger.js';
 
 // Rute
 import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
+import projectRoutes from './routes/project.routes.js';
 
 const app = express();
 
@@ -47,6 +49,12 @@ app.get('/health', (_req, res) => res.json({ ok: true, app: 'Taskify' }));
 
 // Auth
 app.use('/api/auth', authRoutes);
+
+// Users (admin)
+app.use('/api/users', userRoutes);
+
+// Projects
+app.use('/api/projects', projectRoutes);
 
 // 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Not found' }));
