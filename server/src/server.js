@@ -7,7 +7,9 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.js';
+import { swaggerSpec } from './config/swagger.js';
 
 // Rute
 import authRoutes from './routes/auth.routes.js';
@@ -28,6 +30,13 @@ app.use(
     credentials: true,
   })
 );
+
+// ============================================================================
+// SWAGGER API DOCS
+// ============================================================================
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
 
 // ============================================================================
 // ROUTES
