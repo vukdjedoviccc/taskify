@@ -1,0 +1,150 @@
+// ============================================================================
+// TASKIFY - Prisma Schema
+// Task Management aplikacija sa Kanban Board-om
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER - Korisnici sistema
+// ============================================================================
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.NVarChar(191)
+  email     String   @unique @db.NVarChar(191)
+  password  String   @db.NVarChar(255)
+  avatarUrl String?  @db.NVarChar(500)
+  role      String   @default("USER") @db.NVarChar(16)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacije
+  ownedProjects    Project[]        @relation("ProjectOwner")
+  projectMembers   ProjectMember[]
+  createdTasks     Task[]           @relation("TaskCreator")
+}
+
+// ============================================================================
+// PROJECT - Projekti (kontejner za board-ove)
+// ============================================================================
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.NVarChar(191)
+  description String?  @db.NVarChar(Max)
+  color       String   @default("#6366f1") @db.NVarChar(7) // HEX boja
+  isArchived  Boolean  @default(false)
+
+  // Vlasnik projekta
+  ownerId Int
+  owner   User @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacije
+  members ProjectMember[]
+  boards  Board[]
+
+  @@index([ownerId])
+}
+
+// ============================================================================
+// PROJECT MEMBER - Clanovi projekta (join tabela)
+// ============================================================================
+model ProjectMember {
+  id        Int      @id @default(autoincrement())
+  projectId Int
+  userId    Int
+  // Rola unutar projekta: OWNER, MANAGER, MEMBER
+  role      String   @default("MEMBER") @db.NVarChar(16)
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user    User    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+// ============================================================================
+// BOARD - Kanban tabla
+// ============================================================================
+model Board {
+  id        Int     @id @default(autoincrement())
+  name      String  @db.NVarChar(191)
+  projectId Int
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacije
+  columns Column[]
+
+  @@index([projectId])
+}
+
+// ============================================================================
+// COLUMN - Kolone na Kanban tabli (To Do, In Progress, Done)
+// ============================================================================
+model Column {
+  id       Int     @id @default(autoincrement())
+  name     String  @db.NVarChar(64)
+  boardId  Int
+  position Int     @default(0)
+  color    String  @default("#6b7280") @db.NVarChar(7) // HEX boja
+  wipLimit Int?
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacije
+  tasks Task[]
+
+  @@index([boardId])
+  @@index([boardId, position])
+}
+
+// ============================================================================
+// TASK - Zadaci/kartice na Kanban tabli
+// ============================================================================
+model Task {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.NVarChar(255)
+  description String?   @db.NVarChar(Max)
+  columnId    Int
+  position    Int       @default(0)
+  // Prioritet: LOW, MEDIUM, HIGH, URGENT
+  priority    String    @default("MEDIUM") @db.NVarChar(16)
+  // Rok za zavrsetak
+  dueDate     DateTime?
+  // Kada je task zavrsen
+  completedAt DateTime?
+
+  // Ko je kreirao task
+  createdById Int
+  createdBy   User @relation("TaskCreator", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  // Kolona u kojoj se task nalazi
+  column Column @relation(fields: [columnId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([columnId])
+  @@index([columnId, position])
+  @@index([createdById])
+}
